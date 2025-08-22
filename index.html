@@ -1,0 +1,118 @@
+<!doctype html>
+{ label:'Survey lag avoided', val: surveyLagAnnual },
+{ label:'Fewer disputes', val: disputes },
+{ label:'Strike prevention', val: strikes },
+{ label:'Equipment productivity', val: equipment },
+{ label:'Rework avoided', val: rework },
+{ label:'Program cost', val: -totalCost },
+];
+const max = Math.max(1, ...bars.map(b => Math.abs(b.val)));
+const list = $('bars');
+list.innerHTML = '';
+bars.forEach(b => {
+const pct = Math.round((Math.abs(b.val)/max)*100);
+const row = document.createElement('div');
+row.className = 'bar' + (b.val < 0 ? ' neg' : '');
+row.innerHTML = `<div class="label">${b.label}</div>
+<div class="track"><div class="fill" style="width:${pct}%;"></div></div>`;
+list.appendChild(row);
+});
+
+
+return {gross,totalCost,net,roiMultiple,paybackMonths};
+}
+
+
+function reset(){
+const defaults = {
+months:12, flights:4, hrsSaved:3.5, surveyRate:180,
+avgDispute:20000, disputesAvoided:2,
+baseStrikes:1, progStrikes:0.5, avgStrike:25000,
+idleHrs:4, equipRate:250,
+reworkCY:4000, reworkRate:3.5, reworkEvents:1,
+subCost:24000, pilotHrs:1.5, pilotRate:75, train:2000,
+};
+Object.entries(defaults).forEach(([k,v]) => inputs[k].value = v);
+calc();
+}
+
+
+function copySummary(){
+const r = calc();
+const lines = [
+'Aerial Pro ROI Summary',
+`Duration: ${inputs.months.value} mo | Flights/mo: ${inputs.flights.value}`,
+`Gross annual value: ${fmt(r.gross)}`,
+`Program cost (year): ${fmt(r.totalCost)}`,
+`Net annual savings: ${fmt(r.net)}`,
+`ROI multiple: ${isFinite(r.roiMultiple) ? r.roiMultiple.toFixed(2)+'x' : '—'}`,
+`Payback: ${isFinite(r.paybackMonths) ? r.paybackMonths.toFixed(1)+' mo' : 'n/a'}`,
+];
+navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Summary copied to clipboard.'));
+}
+
+
+// URL params prefill (optional)
+const params = new URLSearchParams(location.search);
+Object.keys(inputs).forEach(k=>{ if(params.has(k)) inputs[k].value = params.get(k); });
+
+
+document.querySelectorAll('input').forEach(el=> el.addEventListener('input', calc));
+$('reset').addEventListener('click', reset);
+$('copy').addEventListener('click', copySummary);
+
+
+calc();
+// Branding helpers
+const brandLogo = document.getElementById('brandLogo');
+const brandColorInput = document.getElementById('brandColor');
+const brandLogoUrlInput = document.getElementById('brandLogoUrl');
+const applyBrandBtn = document.getElementById('applyBrand');
+
+
+// Default inline SVG logo (so it always looks decent if you don't paste one)
+const defaultLogo = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="36" viewBox="0 0 320 72">
+<rect width="320" height="72" rx="12" fill="white"/>
+<g font-family="Arial, Helvetica, sans-serif" font-weight="700">
+<text x="18" y="46" font-size="28" fill="#0b1220">Aerial Pro</text>
+<text x="170" y="46" font-size="18" fill="#0ea5e9">ROI</text>
+</g>
+</svg>`);
+
+
+function applyBranding(){
+const color = brandColorInput?.value || '#0ea5e9';
+document.documentElement.style.setProperty('--brand', color);
+// Create a darker variant for hover state
+try {
+const dk = shadeColor(color, -15);
+document.documentElement.style.setProperty('--brand-dk', dk);
+} catch {}
+const url = (brandLogoUrlInput?.value || '').trim();
+brandLogo.src = url || defaultLogo;
+}
+
+
+// Simple color shade function
+function shadeColor(hex, percent){
+const f = parseInt(hex.slice(1),16), t = percent<0?0:255, p = Math.abs(percent)/100;
+const R = f>>16, G = f>>8&0x00FF, B = f&0x0000FF;
+return '#' + (0x1000000 + (Math.round((t-R)*p)+R)*0x10000 + (Math.round((t-G)*p)+G)*0x100 + (Math.round((t-B)*p)+B)).toString(16).slice(1);
+}
+
+
+applyBrandBtn?.addEventListener('click', applyBranding);
+
+
+// Allow preset via URL params: ?brand=%23FF6600&logo=https://...png
+const brandParam = new URLSearchParams(location.search).get('brand');
+const logoParam = new URLSearchParams(location.search).get('logo');
+if(brandParam){ brandColorInput.value = brandParam; }
+if(logoParam){ brandLogoUrlInput.value = logoParam; }
+
+
+applyBranding();
+</script>
+</body>
+</html>
