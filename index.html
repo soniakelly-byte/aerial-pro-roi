@@ -27,9 +27,10 @@
     input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
     /* >>> Robust row layout: use flex so inputs never collapse <<< */
-    .row{display:flex;align-items:center;gap:8px}
-    .row input{flex:1 1 auto;min-width:120px}
-    .suffix{flex:0 0 auto;color:#64748b;font-size:12px;text-align:right;min-width:32px}
+    /* Grid row: input stretches, suffix stays snug and never wraps */
+    .row{display:grid;grid-template-columns:1fr max-content;align-items:center;gap:8px}
+    .row input{width:100%;min-width:0}
+    .suffix{color:#64748b;font-size:12px;text-align:right;white-space:nowrap}
 
     .btns{display:flex;gap:8px;flex-wrap:wrap}
     button{border:0;border-radius:12px;padding:10px 14px;background:var(--brand);color:#fff;cursor:pointer}
