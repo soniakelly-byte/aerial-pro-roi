@@ -1,324 +1,94 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aerial Pro — ROI Calculator (Static, Brand‑Locked)</title>
-  <style>
-    /* Base theme */
-    :root{
-      --bg:#0b1220; --panel:#ffffff; --muted:#6b7280; --ink:#0f172a;
-      --good:#22c55e; --bad:#ef4444;
-      /* DroneDeploy brand locked */
-      --brand:#3F48E9; /* primary */
-      --brand-dk:#2E36C8; /* darker hover */
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:#f1f5f9;font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
-    .wrap{max-width:1080px;margin:0 auto;padding:24px}
-    .h1{font-size:24px;font-weight:700;color:#0f172a;margin:0 0 6px}
-    .sub{color:var(--muted);margin:0 0 16px}
-    .grid{display:grid;gap:16px}
-    .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .card{background:var(--panel);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-    .card h3{margin:0;padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:16px}
-    .card .body{padding:16px}
-    label{display:block;font-size:12px;color:#475569;margin-bottom:6px}
-    input[type=number]{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px}
-    .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
-    .suffix{color:#64748b;font-size:12px;width:70px;text-align:right}
-    .btns{display:flex;gap:8px;flex-wrap:wrap}
-    button{border:0;border-radius:12px;padding:10px 14px;background:var(--brand);color:#fff;cursor:pointer}
-    button:hover{background:var(--brand-dk)}
-    button.ghost{background:#fff;border:1px solid #e5e7eb;color:#111827}
-    .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-    .stat{background:#fff;border-radius:16px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
-    .stat .k{color:#6b7280;font-size:12px}
-    .stat .v{font-size:20px;font-weight:700}
-    .barlist{display:grid;gap:10px}
-    .bar{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center}
-    .bar .label{font-size:12px;color:#374151}
-    .bar .track{background:#e5e7eb;border-radius:999px;overflow:hidden;height:12px}
-    .bar .fill{height:100%;background:var(--good)}
-    .bar.neg .fill{background:var(--bad)}
-    .note{font-size:12px;color:#64748b}
-    @media (max-width:900px){.cols-3{grid-template-columns:1fr}.cols-2{grid-template-columns:1fr}.bar{grid-template-columns:1fr}}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <h1 class="h1">Aerial Pro ROI Calculator</h1>
-    <p class="sub">Adjust the assumptions to match your project. Results update instantly; nothing is saved to a server.</p>
+{ label:'Program cost', val: -totalCost },
+];
+const max = Math.max(1, ...bars.map(b => Math.abs(b.val)));
+const list = $('bars');
+list.innerHTML = '';
+bars.forEach(b => {
+const pct = Math.round((Math.abs(b.val)/max)*100);
+const row = document.createElement('div');
+row.className = 'bar' + (b.val < 0 ? ' neg' : '');
+row.innerHTML = `<div class="label">${b.label}</div>
+<div class="track"><div class="fill" style="width:${pct}%;"></div></div>`;
+list.appendChild(row);
+});
 
-    <div class="grid cols-3">
-      <div class="card" style="grid-column: span 2">
-        <h3>Inputs</h3>
-        <div class="body grid" style="gap:20px">
-          <div class="grid cols-2">
-            <div>
-              <label>Project duration</label>
-              <div class="row"><input id="months" type="number" step="1" value="12"><span class="suffix">months</span></div>
-            </div>
-            <div>
-              <label>Flights per month</label>
-              <div class="row"><input id="flights" type="number" step="1" value="4"><span class="suffix">flights</span></div>
-            </div>
-          </div>
 
-          <div class="grid cols-2">
-            <div class="card">
-              <h3>Survey lag avoided</h3>
-              <div class="body grid">
-                <div class="row"><div>
-                  <label>Hours saved per flight</label>
-                  <input id="hrsSaved" type="number" step="0.1" value="3.5"></div><span class="suffix">hr</span></div>
-                <div class="row"><div>
-                  <label>Survey crew rate</label>
-                  <input id="surveyRate" type="number" step="10" value="180"></div><span class="suffix">$/hr</span></div>
-                <div class="note">Savings: <b id="surveyLagOut">$0</b>/yr</div>
-              </div>
-            </div>
-            <div class="card">
-              <h3>Fewer disputes / COs</h3>
-              <div class="body grid">
-                <div class="row"><div>
-                  <label>Avg dispute cost</label>
-                  <input id="avgDispute" type="number" step="1000" value="20000"></div><span class="suffix">$</span></div>
-                <div class="row"><div>
-                  <label>Disputes avoided per year</label>
-                  <input id="disputesAvoided" type="number" step="1" value="2"></div><span class="suffix"></span></div>
-                <div class="note">Savings: <b id="disputesOut">$0</b>/yr</div>
-              </div>
-            </div>
-            <div class="card">
-              <h3>Strike prevention (post‑install)</h3>
-              <div class="body grid">
-                <div class="row"><div>
-                  <label>Baseline strikes / yr</label>
-                  <input id="baseStrikes" type="number" step="0.1" value="1"></div><span class="suffix"></span></div>
-                <div class="row"><div>
-                  <label>With Aerial Pro / yr</label>
-                  <input id="progStrikes" type="number" step="0.1" value="0.5"></div><span class="suffix"></span></div>
-                <div class="row"><div>
-                  <label>Avg strike cost</label>
-                  <input id="avgStrike" type="number" step="1000" value="25000"></div><span class="suffix">$</span></div>
-                <div class="note">Savings: <b id="strikesOut">$0</b>/yr</div>
-              </div>
-            </div>
-            <div class="card">
-              <h3>Equipment productivity</h3>
-              <div class="body grid">
-                <div class="row"><div>
-                  <label>Idle hours avoided / mo</label>
-                  <input id="idleHrs" type="number" step="0.5" value="4"></div><span class="suffix">hr</span></div>
-                <div class="row"><div>
-                  <label>Equip + operator cost / hr</label>
-                  <input id="equipRate" type="number" step="10" value="250"></div><span class="suffix">$/hr</span></div>
-                <div class="note">Savings: <b id="equipOut">$0</b>/yr</div>
-              </div>
-            </div>
-            <div class="card">
-              <h3>Rework from grade errors</h3>
-              <div class="body grid">
-                <div class="row"><div>
-                  <label>Cubic yards rework avoided</label>
-                  <input id="reworkCY" type="number" step="100" value="4000"></div><span class="suffix">cy</span></div>
-                <div class="row"><div>
-                  <label>Cost per cy</label>
-                  <input id="reworkRate" type="number" step="0.1" value="3.5"></div><span class="suffix">$/cy</span></div>
-                <div class="row"><div>
-                  <label>Events avoided / yr</label>
-                  <input id="reworkEvents" type="number" step="1" value="1"></div><span class="suffix"></span></div>
-                <div class="note">Savings: <b id="reworkOut">$0</b>/yr</div>
-              </div>
-            </div>
-          </div>
+return {gross,totalCost,net,roiMultiple,paybackMonths,perTrip};
+}
 
-          <div class="btns">
-            <button id="reset" class="ghost">Reset</button>
-            <button id="copy">Copy summary</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="card">
-        <h3>Results</h3>
-        <div class="body grid" style="gap:16px">
-          <div class="stats">
-            <div class="stat"><div class="k">Gross annual value</div><div class="v" id="gross">$0</div></div>
-            <div class="stat"><div class="k">Program cost (year)</div><div class="v" id="cost">$0</div></div>
-            <div class="stat"><div class="k">Net annual savings</div><div class="v" id="net">$0</div></div>
-            <div class="stat"><div class="k">ROI multiple</div><div class="v" id="roi">—</div></div>
-            <div class="stat" style="grid-column:span 2"><div class="k">Payback</div><div class="v" id="payback">—</div></div>
-          </div>
+function setVals(obj){
+Object.entries(obj).forEach(([k,v])=>{ if(inputs[k]) inputs[k].value = v; });
+calc();
+}
 
-          <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
-            <div class="body">
-              <div class="barlist" id="bars"></div>
-            </div>
-          </div>
 
-          <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
-            <h3>Program costs</h3>
-            <div class="body grid cols-2">
-              <div>
-                <label>Aerial Pro subscription (year)</label>
-                <div class="row"><input id="subCost" type="number" step="1000" value="24000"><span class="suffix">$</span></div>
-              </div>
-              <div>
-                <label>Pilot hours per flight</label>
-                <div class="row"><input id="pilotHrs" type="number" step="0.1" value="1.5"><span class="suffix">hr</span></div>
-              </div>
-              <div>
-                <label>Pilot rate</label>
-                <div class="row"><input id="pilotRate" type="number" step="5" value="75"><span class="suffix">$/hr</span></div>
-              </div>
-              <div>
-                <label>Training / enablement (yr 1)</label>
-                <div class="row"><input id="train" type="number" step="100" value="2000"><span class="suffix">$</span></div>
-              </div>
-            </div>
-          </div>
+// Presets (conservative/base/aggressive)
+const presets = {
+conservative: {
+flights:2, hrsSaved:2.5, surveyRate:170, disputesAvoided:1,
+baseStrikes:0.5, progStrikes:0.25, idleHrs:2, reworkCY:1500,
+tripsYr:3, airfare:350, nights:1, hotelRate:150, mealsPer:50, groundPer:60,
+gcpHours:1.5, vdcRate:150,
+},
+base: {
+flights:4, hrsSaved:3.5, surveyRate:180, disputesAvoided:2,
+baseStrikes:1, progStrikes:0.5, idleHrs:4, reworkCY:4000,
+tripsYr:6, airfare:450, nights:2, hotelRate:160, mealsPer:60, groundPer:80,
+gcpHours:2.0, vdcRate:150,
+},
+aggressive: {
+flights:8, hrsSaved:4.5, surveyRate:200, disputesAvoided:3,
+baseStrikes:2, progStrikes:0.5, idleHrs:8, reworkCY:8000,
+tripsYr:12, airfare:600, nights:2, hotelRate:200, mealsPer:70, groundPer:100,
+gcpHours:2.5, vdcRate:175,
+}
+};
 
-          <div class="note">
-            Notes: Savings are illustrative and depend on site conditions, flight cadence, subcontractor mix, and dispute environment. Strike reduction assumes better documentation and operator briefings enabled by post‑install as‑builts.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
-    const fmt = (n) => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
+function applyPreset(name){
+document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('active'));
+const btn = name==='base'? document.getElementById('pBase') : name==='aggressive'? document.getElementById('pAggressive') : document.getElementById('pConservative');
+btn.classList.add('active');
+setVals(presets[name]);
+}
 
-    const inputs = {
-      months: $('months'), flights: $('flights'),
-      hrsSaved: $('hrsSaved'), surveyRate: $('surveyRate'),
-      avgDispute: $('avgDispute'), disputesAvoided: $('disputesAvoided'),
-      baseStrikes: $('baseStrikes'), progStrikes: $('progStrikes'), avgStrike: $('avgStrike'),
-      idleHrs: $('idleHrs'), equipRate: $('equipRate'),
-      reworkCY: $('reworkCY'), reworkRate: $('reworkRate'), reworkEvents: $('reworkEvents'),
-      subCost: $('subCost'), pilotHrs: $('pilotHrs'), pilotRate: $('pilotRate'), train: $('train'),
-    };
 
-    function calc(){
-      const months = +inputs.months.value || 0;
-      const flights = +inputs.flights.value || 0;
-      const hrsSaved = +inputs.hrsSaved.value || 0;
-      const surveyRate = +inputs.surveyRate.value || 0;
+function reset(){
+// Reset to Base preset + 12 months
+$('months').value = 12;
+applyPreset('base');
+}
 
-      const avgDispute = +inputs.avgDispute.value || 0;
-      const disputesAvoided = +inputs.disputesAvoided.value || 0;
 
-      const baseStrikes = +inputs.baseStrikes.value || 0;
-      const progStrikes = +inputs.progStrikes.value || 0;
-      const avgStrike = +inputs.avgStrike.value || 0;
+function copySummary(){
+const r = calc();
+const lines = [
+'Aerial Pro ROI Summary',
+`Duration: ${inputs.months.value} mo | Flights/mo: ${inputs.flights.value}`,
+`Gross annual value: ${fmt(r.gross)}`,
+`Program cost (year): ${fmt(r.totalCost)}`,
+`Net annual savings: ${fmt(r.net)}`,
+`ROI multiple: ${isFinite(r.roiMultiple) ? r.roiMultiple.toFixed(2)+'x' : '—'}`,
+`Payback: ${isFinite(r.paybackMonths) ? r.paybackMonths.toFixed(1)+' mo' : 'n/a'}`,
+];
+navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Summary copied to clipboard.'));
+}
 
-      const idleHrs = +inputs.idleHrs.value || 0;
-      const equipRate = +inputs.equipRate.value || 0;
 
-      const reworkCY = +inputs.reworkCY.value || 0;
-      const reworkRate = +inputs.reworkRate.value || 0;
-      const reworkEvents = +inputs.reworkEvents.value || 0;
+// Wire events
+document.querySelectorAll('input').forEach(el=> el.addEventListener('input', calc));
+$('reset').addEventListener('click', reset);
+$('copy').addEventListener('click', copySummary);
+document.getElementById('pConservative').addEventListener('click', ()=>applyPreset('conservative'));
+document.getElementById('pBase').addEventListener('click', ()=>applyPreset('base'));
+document.getElementById('pAggressive').addEventListener('click', ()=>applyPreset('aggressive'));
 
-      const subCost = +inputs.subCost.value || 0;
-      const pilotHrs = +inputs.pilotHrs.value || 0;
-      const pilotRate = +inputs.pilotRate.value || 0;
-      const train = +inputs.train.value || 0;
 
-      // Savings
-      const surveyLagAnnual = (flights * hrsSaved * surveyRate) * (months/12);
-      const disputes = avgDispute * disputesAvoided;
-      const strikes = Math.max(baseStrikes - progStrikes, 0) * avgStrike;
-      const equipment = idleHrs * equipRate * months;
-      const rework = reworkCY * reworkRate * reworkEvents;
-      const gross = surveyLagAnnual + disputes + strikes + equipment + rework;
-
-      // Costs
-      const capture = pilotHrs * pilotRate * flights * months;
-      const totalCost = subCost + capture + train;
-
-      const net = gross - totalCost;
-      const roiMultiple = totalCost > 0 ? net / totalCost : 0;
-      const monthlyNet = months > 0 ? net / months : 0;
-      const paybackMonths = monthlyNet > 0 ? (totalCost / monthlyNet) : Infinity;
-
-      // Update UI
-      $('surveyLagOut').textContent = fmt(surveyLagAnnual);
-      $('disputesOut').textContent = fmt(disputes);
-      $('strikesOut').textContent = fmt(strikes);
-      $('equipOut').textContent = fmt(equipment);
-      $('reworkOut').textContent = fmt(rework);
-
-      $('gross').textContent = fmt(gross);
-      $('cost').textContent = fmt(totalCost);
-      $('net').textContent = fmt(net);
-      $('roi').textContent = isFinite(roiMultiple) ? (roiMultiple.toFixed(2) + '×') : '—';
-      $('payback').textContent = isFinite(paybackMonths) ? (paybackMonths.toFixed(1) + ' months') : 'n/a';
-
-      // Bars
-      const bars = [
-        { label:'Survey lag avoided', val: surveyLagAnnual },
-        { label:'Fewer disputes', val: disputes },
-        { label:'Strike prevention', val: strikes },
-        { label:'Equipment productivity', val: equipment },
-        { label:'Rework avoided', val: rework },
-        { label:'Program cost', val: -totalCost },
-      ];
-      const max = Math.max(1, ...bars.map(b => Math.abs(b.val)));
-      const list = $('bars');
-      list.innerHTML = '';
-      bars.forEach(b => {
-        const pct = Math.round((Math.abs(b.val)/max)*100);
-        const row = document.createElement('div');
-        row.className = 'bar' + (b.val < 0 ? ' neg' : '');
-        row.innerHTML = `<div class="label">${b.label}</div>
-                         <div class="track"><div class="fill" style="width:${pct}%;"></div></div>`;
-        list.appendChild(row);
-      });
-
-      return {gross,totalCost,net,roiMultiple,paybackMonths};
-    }
-
-    function reset(){
-      const defaults = {
-        months:12, flights:4, hrsSaved:3.5, surveyRate:180,
-        avgDispute:20000, disputesAvoided:2,
-        baseStrikes:1, progStrikes:0.5, avgStrike:25000,
-        idleHrs:4, equipRate:250,
-        reworkCY:4000, reworkRate:3.5, reworkEvents:1,
-        subCost:24000, pilotHrs:1.5, pilotRate:75, train:2000,
-      };
-      Object.entries(defaults).forEach(([k,v]) => inputs[k].value = v);
-      calc();
-    }
-
-    function copySummary(){
-      const r = calc();
-      const lines = [
-        'Aerial Pro ROI Summary',
-        `Duration: ${inputs.months.value} mo | Flights/mo: ${inputs.flights.value}`,
-        `Gross annual value: ${fmt(r.gross)}`,
-        `Program cost (year): ${fmt(r.totalCost)}`,
-        `Net annual savings: ${fmt(r.net)}`,
-        `ROI multiple: ${isFinite(r.roiMultiple) ? r.roiMultiple.toFixed(2)+'x' : '—'}`,
-        `Payback: ${isFinite(r.paybackMonths) ? r.paybackMonths.toFixed(1)+' mo' : 'n/a'}`,
-      ];
-      navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Summary copied to clipboard.'));
-    }
-
-    // URL params prefill (optional)
-    const params = new URLSearchParams(location.search);
-    Object.keys(inputs).forEach(k=>{ if(params.has(k)) inputs[k].value = params.get(k); });
-
-    document.querySelectorAll('input').forEach(el=> el.addEventListener('input', calc));
-    $('reset').addEventListener('click', reset);
-    $('copy').addEventListener('click', copySummary);
-
-    // Initial render
-    calc();
-  </script>
+// Initialize: conservative by default, then calculate
+applyPreset('conservative');
+calc();
+</script>
 </body>
 </html>
