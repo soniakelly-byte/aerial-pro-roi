@@ -48,6 +48,11 @@
     .help::before{content:"";position:absolute;left:12px;top:6px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:6px solid #111827;opacity:0;transition:.15s}
     .help:hover::after,.help:hover::before{opacity:1}
     @media (max-width:900px){.cols-3{grid-template-columns:1fr}.cols-2{grid-template-columns:1fr}.bar{grid-template-columns:1fr}.presetBox{align-items:flex-start}}
+
+/* Normalize number inputs so they always render as text fields */
+input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }  
   </style>
 </head>
 <body>
@@ -249,7 +254,7 @@
     </div>
   </div>
 
- <script>
+<script>
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
 
@@ -337,6 +342,7 @@
     calc();
   }
 
+  // Presets
   const presets = {
     conservative: {
       flights:2, hrsSaved:2.5, surveyRate:170, disputesAvoided:1,
@@ -384,11 +390,18 @@
     navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Summary copied to clipboard.'));
   }
 
-  // URL params prefill (ignore empty values so defaults aren't wiped)
+  // --- Robust URL param prefill (handles $ and , and ignores bad values) ---
   const params = new URLSearchParams(location.search);
-  Object.keys(inputs).forEach(k=>{
-    const v = params.get(k);
-    if(v !== null && v !== "") inputs[k].value = v;
+  Object.entries(inputs).forEach(([k, el])=>{
+    const raw = params.get(k);
+    if (raw === null || raw === "") return; // ignore empty
+    if (el.type === "number") {
+      const cleaned = String(raw).replace(/[$,\\s]/g, "");
+      const n = Number(cleaned);
+      if (isFinite(n)) el.value = n; // only set if valid number
+    } else {
+      el.value = raw;
+    }
   });
 
   // Wire events
@@ -399,17 +412,18 @@
   document.getElementById('pBase').addEventListener('click', ()=>applyPreset('base'));
   document.getElementById('pAggressive').addEventListener('click', ()=>applyPreset('aggressive'));
 
-  // Safeguard defaults if any key cost fields were blanked by URL params
-  if(!inputs.subCost.value) inputs.subCost.value = 24000;
-  if(!inputs.pilotHrs.value) inputs.pilotHrs.value = 1.5;
-  if(!inputs.pilotRate.value) inputs.pilotRate.value = 75;
-  if(!inputs.train.value) inputs.train.value = 2000;
-  if(!inputs.months.value) inputs.months.value = 12;
+  // Safeguard core defaults if blank/invalid
+  if (!inputs.subCost.value || !isFinite(+inputs.subCost.value)) inputs.subCost.value = 24000;
+  if (!inputs.pilotHrs.value || !isFinite(+inputs.pilotHrs.value)) inputs.pilotHrs.value = 1.5;
+  if (!inputs.pilotRate.value || !isFinite(+inputs.pilotRate.value)) inputs.pilotRate.value = 75;
+  if (!inputs.train.value   || !isFinite(+inputs.train.value))   inputs.train.value   = 2000;
+  if (!inputs.months.value  || !isFinite(+inputs.months.value))  inputs.months.value  = 12;
 
-  // Start conservative by default
+  // Start conservative
   applyPreset('conservative');
   calc();
 </script>
+
 
 </body>
 </html>
