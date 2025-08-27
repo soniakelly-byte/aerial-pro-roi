@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aerial Pro — ROI Calculator (Presets + Info, v3)</title>
+  <title>Aerial Pro — ROI Calculator (Presets + Info)</title>
   <style>
     /* Theme (DroneDeploy brand) */
     :root{--brand:#3F48E9;--brand-dk:#2E36C8;--panel:#ffffff;--muted:#6b7280;--ink:#0f172a;--good:#22c55e;--bad:#ef4444}
     *{box-sizing:border-box}
-    body{margin:0;background:#f1f5f9;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}
+    body{margin:0;background:#f1f5f9;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
     .wrap{max-width:1080px;margin:0 auto;padding:24px}
     h1{font-size:24px;font-weight:700;color:var(--ink);margin:0}
     .sub{color:var(--muted);margin:6px 0 16px}
@@ -19,19 +19,9 @@
     .card h3{margin:0;padding:14px 16px;border-bottom:1px solid #e5e7eb;font-size:16px;display:flex;align-items:center;gap:8px}
     .card .body{padding:16px}
     label{display:block;font-size:12px;color:#475569;margin-bottom:6px}
-    input[type=number]{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;color:#0f172a}
-    input::placeholder{color:#94a3b8}
-    /* Normalize number inputs */
-    input[type="number"]{appearance:textfield;-moz-appearance:textfield}
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-
-    /* >>> Robust row layout: use flex so inputs never collapse <<< */
-    /* Grid row: input stretches, suffix stays snug and never wraps */
-    .row{display:grid;grid-template-columns:1fr max-content;align-items:center;gap:8px}
-    .row input{width:100%;min-width:0}
-    .suffix{color:#64748b;font-size:12px;text-align:right;white-space:nowrap}
-
+    input[type=number]{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px}
+    .row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    .suffix{color:#64748b;font-size:12px;width:90px;text-align:right}
     .btns{display:flex;gap:8px;flex-wrap:wrap}
     button{border:0;border-radius:12px;padding:10px 14px;background:var(--brand);color:#fff;cursor:pointer}
     button:hover{background:var(--brand-dk)}
@@ -78,18 +68,17 @@
     </div>
 
     <div class="grid cols-3">
-      <!-- Left 2/3: Inputs -->
       <div class="card" style="grid-column: span 2">
         <h3>Inputs</h3>
         <div class="body grid" style="gap:20px">
           <div class="grid cols-2">
             <div>
               <label>Project duration</label>
-              <div class="row"><input id="months" type="number" step="1" value="12" placeholder="12"><span class="suffix">months</span></div>
+              <div class="row"><input id="months" type="number" step="1" value="12"><span class="suffix">months</span></div>
             </div>
             <div>
               <label>Flights per month</label>
-              <div class="row"><input id="flights" type="number" step="1" value="2" placeholder="2"><span class="suffix">flights</span></div>
+              <div class="row"><input id="flights" type="number" step="1" value="2"><span class="suffix">flights</span></div>
             </div>
           </div>
 
@@ -99,10 +88,10 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Hours saved per flight</label>
-                  <input id="hrsSaved" type="number" step="0.1" value="2.5" placeholder="2.5"></div><span class="suffix">hr</span></div>
+                  <input id="hrsSaved" type="number" step="0.1" value="2.5"></div><span class="suffix">hr</span></div>
                 <div class="row"><div>
                   <label>Survey crew rate</label>
-                  <input id="surveyRate" type="number" step="10" value="170" placeholder="170"></div><span class="suffix">$/hr</span></div>
+                  <input id="surveyRate" type="number" step="10" value="170"></div><span class="suffix">$/hr</span></div>
                 <div class="note">Savings: <b id="surveyLagOut">$0</b>/yr</div>
               </div>
             </div>
@@ -112,10 +101,10 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Avg dispute cost</label>
-                  <input id="avgDispute" type="number" step="1000" value="20000" placeholder="20000"></div><span class="suffix">$</span></div>
+                  <input id="avgDispute" type="number" step="1000" value="20000"></div><span class="suffix">$</span></div>
                 <div class="row"><div>
                   <label>Disputes avoided per year</label>
-                  <input id="disputesAvoided" type="number" step="1" value="1" placeholder="1"></div><span class="suffix"></span></div>
+                  <input id="disputesAvoided" type="number" step="1" value="1"></div><span class="suffix"></span></div>
                 <div class="note">Savings: <b id="disputesOut">$0</b>/yr</div>
               </div>
             </div>
@@ -125,13 +114,13 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Baseline strikes / yr</label>
-                  <input id="baseStrikes" type="number" step="0.1" value="0.5" placeholder="0.5"></div><span class="suffix"></span></div>
+                  <input id="baseStrikes" type="number" step="0.1" value="0.5"></div><span class="suffix"></span></div>
                 <div class="row"><div>
                   <label>With Aerial Pro / yr</label>
-                  <input id="progStrikes" type="number" step="0.1" value="0.25" placeholder="0.25"></div><span class="suffix"></span></div>
+                  <input id="progStrikes" type="number" step="0.1" value="0.25"></div><span class="suffix"></span></div>
                 <div class="row"><div>
                   <label>Avg strike cost</label>
-                  <input id="avgStrike" type="number" step="1000" value="25000" placeholder="25000"></div><span class="suffix">$</span></div>
+                  <input id="avgStrike" type="number" step="1000" value="25000"></div><span class="suffix">$</span></div>
                 <div class="note">Savings: <b id="strikesOut">$0</b>/yr</div>
               </div>
             </div>
@@ -141,10 +130,10 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Idle hours avoided / mo</label>
-                  <input id="idleHrs" type="number" step="0.5" value="2" placeholder="2"></div><span class="suffix">hr</span></div>
+                  <input id="idleHrs" type="number" step="0.5" value="2"></div><span class="suffix">hr</span></div>
                 <div class="row"><div>
                   <label>Equip + operator cost / hr</label>
-                  <input id="equipRate" type="number" step="10" value="250" placeholder="250"></div><span class="suffix">$/hr</span></div>
+                  <input id="equipRate" type="number" step="10" value="250"></div><span class="suffix">$/hr</span></div>
                 <div class="note">Savings: <b id="equipOut">$0</b>/yr</div>
               </div>
             </div>
@@ -154,13 +143,13 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Cubic yards rework avoided</label>
-                  <input id="reworkCY" type="number" step="100" value="1500" placeholder="1500"></div><span class="suffix">cy</span></div>
+                  <input id="reworkCY" type="number" step="100" value="1500"></div><span class="suffix">cy</span></div>
                 <div class="row"><div>
                   <label>Cost per cy</label>
-                  <input id="reworkRate" type="number" step="0.1" value="3.5" placeholder="3.5"></div><span class="suffix">$/cy</span></div>
+                  <input id="reworkRate" type="number" step="0.1" value="3.5"></div><span class="suffix">$/cy</span></div>
                 <div class="row"><div>
                   <label>Events avoided / yr</label>
-                  <input id="reworkEvents" type="number" step="1" value="1" placeholder="1"></div><span class="suffix"></span></div>
+                  <input id="reworkEvents" type="number" step="1" value="1"></div><span class="suffix"></span></div>
                 <div class="note">Savings: <b id="reworkOut">$0</b>/yr</div>
               </div>
             </div>
@@ -170,22 +159,22 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Trips avoided / yr</label>
-                  <input id="tripsYr" type="number" step="1" value="3" placeholder="3"></div><span class="suffix">trips</span></div>
+                  <input id="tripsYr" type="number" step="1" value="3"></div><span class="suffix">trips</span></div>
                 <div class="row"><div>
                   <label>Airfare per trip</label>
-                  <input id="airfare" type="number" step="10" value="350" placeholder="350"></div><span class="suffix">$</span></div>
+                  <input id="airfare" type="number" step="10" value="350"></div><span class="suffix">$</span></div>
                 <div class="row"><div>
                   <label>Nights per trip</label>
-                  <input id="nights" type="number" step="1" value="1" placeholder="1"></div><span class="suffix">nights</span></div>
+                  <input id="nights" type="number" step="1" value="1"></div><span class="suffix">nights</span></div>
                 <div class="row"><div>
                   <label>Hotel per night</label>
-                  <input id="hotelRate" type="number" step="10" value="150" placeholder="150"></div><span class="suffix">$</span></div>
+                  <input id="hotelRate" type="number" step="10" value="150"></div><span class="suffix">$</span></div>
                 <div class="row"><div>
                   <label>Meals per day</label>
-                  <input id="mealsPer" type="number" step="5" value="50" placeholder="50"></div><span class="suffix">$</span></div>
+                  <input id="mealsPer" type="number" step="5" value="50"></div><span class="suffix">$</span></div>
                 <div class="row"><div>
                   <label>Ground / trip</label>
-                  <input id="groundPer" type="number" step="5" value="60" placeholder="60"></div><span class="suffix">$</span></div>
+                  <input id="groundPer" type="number" step="5" value="60"></div><span class="suffix">$</span></div>
                 <div class="note">Savings: <b id="travelOut">$0</b>/yr</div>
               </div>
             </div>
@@ -195,10 +184,10 @@
               <div class="body grid">
                 <div class="row"><div>
                   <label>Hours saved per map</label>
-                  <input id="gcpHours" type="number" step="0.1" value="1.5" placeholder="1.5"></div><span class="suffix">hr</span></div>
+                  <input id="gcpHours" type="number" step="0.1" value="1.5"></div><span class="suffix">hr</span></div>
                 <div class="row"><div>
                   <label>VDC bill rate</label>
-                  <input id="vdcRate" type="number" step="5" value="150" placeholder="150"></div><span class="suffix">$/hr</span></div>
+                  <input id="vdcRate" type="number" step="5" value="150"></div><span class="suffix">$/hr</span></div>
                 <div class="note">Savings uses: Months × Flights/mo × Hours × Rate</div>
                 <div class="note">Savings: <b id="gcpOut">$0</b>/yr</div>
               </div>
@@ -213,7 +202,6 @@
         </div>
       </div>
 
-      <!-- Right 1/3: Results & Costs -->
       <div class="card">
         <h3>Results</h3>
         <div class="body grid" style="gap:16px">
@@ -231,25 +219,24 @@
             </div>
           </div>
 
-          <!-- Program costs (flex rows; placeholders added) -->
           <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
             <h3>Program costs</h3>
             <div class="body grid cols-2">
               <div>
                 <label>Aerial Pro subscription (year)</label>
-                <div class="row"><input id="subCost" type="number" step="1000" value="24000" placeholder="24000"><span class="suffix">$</span></div>
+                <div class="row"><input id="subCost" type="number" step="1000" value="24000"><span class="suffix">$</span></div>
               </div>
               <div>
                 <label>Pilot hours per flight</label>
-                <div class="row"><input id="pilotHrs" type="number" step="0.1" value="1.5" placeholder="1.5"><span class="suffix">hr</span></div>
+                <div class="row"><input id="pilotHrs" type="number" step="0.1" value="1.5"></div><span class="suffix">hr</span>
               </div>
               <div>
                 <label>Pilot rate</label>
-                <div class="row"><input id="pilotRate" type="number" step="5" value="75" placeholder="75"><span class="suffix">$/hr</span></div>
+                <div class="row"><input id="pilotRate" type="number" step="5" value="75"></div><span class="suffix">$/hr</span>
               </div>
               <div>
                 <label>Training / enablement (yr 1)</label>
-                <div class="row"><input id="train" type="number" step="100" value="2000" placeholder="2000"><span class="suffix">$</span></div>
+                <div class="row"><input id="train" type="number" step="100" value="2000"></div><span class="suffix">$</span>
               </div>
             </div>
           </div>
@@ -259,7 +246,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -292,7 +278,7 @@
       const perTrip = (+inputs.airfare.value||0) + ((+inputs.nights.value||0) * ((+inputs.hotelRate.value||0) + (+inputs.mealsPer.value||0))) + (+inputs.groundPer.value||0);
       const travel = (+inputs.tripsYr.value||0) * perTrip;
 
-      const gcp = (months/12) * flights * ((+inputs.gcpHours.value||0) * (+inputs.vdcRate.value||0));
+      const gcp = flights * months * ((+inputs.gcpHours.value||0) * (+inputs.vdcRate.value||0));
 
       const gross = surveyLagAnnual + disputes + strikes + equipment + rework + travel + gcp;
 
@@ -351,7 +337,7 @@
       calc();
     }
 
-    // Presets
+    // Presets (conservative/base/aggressive)
     const presets = {
       conservative: {
         flights:2, hrsSaved:2.5, surveyRate:170, disputesAvoided:1,
@@ -381,6 +367,7 @@
     }
 
     function reset(){
+      // Reset to Base preset + 12 months
       $('months').value = 12;
       applyPreset('base');
     }
@@ -399,27 +386,6 @@
       navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Summary copied to clipboard.'));
     }
 
-    // Robust URL param prefill (handles $ and , and ignores bad values)
-    const params = new URLSearchParams(location.search);
-    Object.entries(inputs).forEach(([k, el])=>{
-      const raw = params.get(k);
-      if (raw === null || raw === "") return; // ignore empty
-      if (el.type === "number") {
-        const cleaned = String(raw).replace(/[$,\s]/g, "");
-        const n = Number(cleaned);
-        if (isFinite(n)) el.value = n; // only set if valid number
-      } else {
-        el.value = raw;
-      }
-    });
-
-    // Safeguard core defaults if blank/invalid
-    if (!inputs.subCost.value || !isFinite(+inputs.subCost.value)) inputs.subCost.value = 24000;
-    if (!inputs.pilotHrs.value || !isFinite(+inputs.pilotHrs.value)) inputs.pilotHrs.value = 1.5;
-    if (!inputs.pilotRate.value || !isFinite(+inputs.pilotRate.value)) inputs.pilotRate.value = 75;
-    if (!inputs.train.value   || !isFinite(+inputs.train.value))   inputs.train.value   = 2000;
-    if (!inputs.months.value  || !isFinite(+inputs.months.value))  inputs.months.value  = 12;
-
     // Wire events
     document.querySelectorAll('input').forEach(el=> el.addEventListener('input', calc));
     $('reset').addEventListener('click', reset);
@@ -428,7 +394,7 @@
     document.getElementById('pBase').addEventListener('click', ()=>applyPreset('base'));
     document.getElementById('pAggressive').addEventListener('click', ()=>applyPreset('aggressive'));
 
-    // Start conservative
+    // Initialize: conservative by default, then calculate
     applyPreset('conservative');
     calc();
   </script>
