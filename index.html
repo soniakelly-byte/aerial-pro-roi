@@ -299,8 +299,7 @@
     function calc(){
       const months = +inputs.months.value || 0;
       const flights = +inputs.flights.value || 0;
-
-      const surveyLagAnnual = (flights * (+inputs.hrsSaved.value||0) * (+inputs.surveyRate.value||0)) * (months/12);
+      const surveyLagAnnual = flights * months * ((+inputs.hrsSaved.value||0) * (+inputs.surveyRate.value||0));
       const disputes = (+inputs.avgDispute.value||0) * (+inputs.disputesAvoided.value||0);
       const strikes = Math.max((+inputs.baseStrikes.value||0) - (+inputs.progStrikes.value||0), 0) * (+inputs.avgStrike.value||0);
       const equipment = (+inputs.idleHrs.value||0) * (+inputs.equipRate.value||0) * months;
