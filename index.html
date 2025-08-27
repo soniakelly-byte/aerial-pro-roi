@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aerial Pro — ROI Calculator (Presets + Info)</title>
   <style>
+
+    /* Program costs: force a single column stack */
+.costs-stack { grid-template-columns: 1fr !important; }
+
+/* Keep input + suffix on one line and never collapse */
+.row{
+  display:grid;
+  grid-template-columns: minmax(200px,1fr) max-content;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+.row input{ width:100%; min-width:0; }
+.suffix{ white-space:nowrap; font-size:12px; color:#64748b; text-align:right; }
+    
     /* Theme (DroneDeploy brand) */
     :root{--brand:#3F48E9;--brand-dk:#2E36C8;--panel:#ffffff;--muted:#6b7280;--ink:#0f172a;--good:#22c55e;--bad:#ef4444}
     *{box-sizing:border-box}
@@ -227,39 +242,43 @@
             </div>
           </div>
 
-          <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
-            <h3>Program costs</h3>
-            <div class="body grid cols-2">
+         <div class="card" style="box-shadow:none;border:1px solid #e5e7eb">
+  <h3>Program costs</h3>
+  <div class="body grid costs-stack">
+    <div>
+      <label>Aerial Pro subscription (year)</label>
+      <div class="row">
+        <input id="subCost" type="number" step="1000" value="24000" placeholder="24000">
+        <span class="suffix">$</span>
+      </div>
+    </div>
 
-              <div>
-  <label>Aerial Pro subscription (year)</label>
-  <div class="row">
-    <input id="subCost" type="number" step="1000" value="24000" placeholder="24000">
-    <span class="suffix">$</span>
-  </div>
-</div>
-              <div>
-                <label>Pilot hours per flight</label>
-                <div class="row"><input id="pilotHrs" type="number" step="0.1" value="1.5"></div><span class="suffix">hr</span>
-              </div>
-              <div>
-                <label>Pilot rate</label>
-                <div class="row"><input id="pilotRate" type="number" step="5" value="75"></div><span class="suffix">$/hr</span>
-              </div>
-              <div>
-                <label>Training / enablement (yr 1)</label>
-                <div class="row"><input id="train" type="number" step="100" value="2000"></div><span class="suffix">$</span>
-              </div>
-            </div>
-          </div>
+    <div>
+      <label>Pilot hours per flight</label>
+      <div class="row">
+        <input id="pilotHrs" type="number" step="0.1" value="1.5" placeholder="1.5">
+        <span class="suffix">hr</span>
+      </div>
+    </div>
 
-          <div class="note">
-            Notes: Savings are illustrative and depend on site conditions, flight cadence, subcontractor mix, and dispute environment.
-          </div>
-        </div>
+    <div>
+      <label>Pilot rate</label>
+      <div class="row">
+        <input id="pilotRate" type="number" step="5" value="75" placeholder="75">
+        <span class="suffix">$/hr</span>
+      </div>
+    </div>
+
+    <div>
+      <label>Training / enablement (yr 1)</label>
+      <div class="row">
+        <input id="train" type="number" step="100" value="2000" placeholder="2000">
+        <span class="suffix">$</span>
       </div>
     </div>
   </div>
+</div>
+
 
   <script>
     const $ = (id) => document.getElementById(id);
