@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aerial Pro — ROI Calculator (v8)</title>
+  <title>Aerial Pro — ROI Calculator (v9)</title>
   <style>
-    :root{--brand:#3F48E9;--brand-dk:#2E36C8;--panel:#ffffff;--muted:#6b7280;--ink:#0f172a;--good:#22c55e;--bad:#ef4444}
+    :root{--brand:#3F48E9;--brand-dk:#2E36C8;--panel:#ffffff;--muted:#64748b;--ink:#0f172a;--good:#22c55e;--bad:#ef4444}
     *{box-sizing:border-box}
-    body{margin:0;background:#f1f5f9;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}
+    body{margin:0;background:#f1f5f9;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:var(--ink)}
     .wrap{max-width:1080px;margin:0 auto;padding:24px}
-    h1{font-size:24px;font-weight:700;color:var(--ink);margin:0}
-    .sub{color:#64748b;margin:6px 0 16px}
+    h1{font-size:24px;font-weight:700;margin:0}
+    .sub{color:var(--muted);margin:6px 0 16px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     .grid{display:grid;gap:16px}
     .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
     .cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -23,38 +24,66 @@
     input[type="number"]{appearance:textfield;-moz-appearance:textfield}
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+
     .row{display:grid;grid-template-columns:minmax(200px,1fr) max-content;align-items:center;gap:8px;width:100%}
     .row input{width:100%;min-width:0}
-    .suffix{color:#64748b;font-size:12px;text-align:right;white-space:nowrap}
-    .pill{display:inline-block;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;color:#0f172a}
+    .suffix{color:var(--muted);font-size:12px;text-align:right;white-space:nowrap}
+
     .btns{display:flex;gap:8px;flex-wrap:wrap}
     button{border:0;border-radius:12px;padding:10px 14px;background:var(--brand);color:#fff;cursor:pointer}
     button:hover{background:var(--brand-dk)}
     button.ghost{background:#fff;color:#111827;border:1px solid #e5e7eb}
+
     .seg{display:flex;gap:6px;align-items:center;background:#e5e7eb66;border-radius:12px;padding:4px}
     .seg button{background:transparent;color:#111827;padding:8px 12px;border-radius:10px}
     .seg button.active{background:var(--brand);color:#fff}
+
     .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .stat{background:#fff;border-radius:16px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
     .stat .k{color:#6b7280;font-size:12px}
     .stat .v{font-size:20px;font-weight:700}
-    .barlist{display:grid;gap:10px}
-    .bar{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center}
-    .bar .label{font-size:12px;color:#374151}
-    .bar .track{background:#e5e7eb;border-radius:999px;overflow:hidden;height:12px;position:relative}
+
+    .barlist{display:grid;gap:12px}
+    /* Reworked bar to show value UNDER the bar (better mobile UX) */
+    .bar{display:grid;grid-template-columns:160px 1fr;grid-template-rows:auto auto;gap:4px 10px;align-items:center}
+    .bar .label{grid-column:1;grid-row:1;font-size:12px;color:#374151}
+    .bar .track{grid-column:2;grid-row:1;background:#e5e7eb;border-radius:999px;overflow:hidden;height:12px}
     .bar .fill{height:100%;background:var(--good)}
     .bar.neg .fill{background:var(--bad)}
+    .bar .val{grid-column:1 / span 2;grid-row:2;font-size:12px;color:#0f172a;display:flex;justify-content:flex-end}
+
     .note{font-size:12px;color:#64748b}
     .header{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:8px}
     .presetBox{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
     .presetHint{font-size:12px;color:#64748b}
-    .help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px;cursor:help;position:relative}
-    .help::after{content:attr(data-tip);position:absolute;z-index:10;left:18px;top:-2px;background:#111827;color:#fff;padding:8px 10px;border-radius:8px;width:260px;max-width:60vw;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:.15s}
-    .help::before{content:"";position:absolute;left:12px;top:6px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:6px solid #111827;opacity:0}
-    .help:hover::after,.help:hover::before{opacity:1}
+    .help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px;cursor:help}
+
+    /* Program costs: stack rows */
     .costs-stack{grid-template-columns:1fr !important}
-    .bartip{position:fixed;z-index:1000;pointer-events:none;background:#111827;color:#fff;padding:8px 10px;border-radius:8px;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transform:translate(-50%, -120%);transition:opacity .12s}
-    @media (max-width:900px){.cols-3{grid-template-columns:1fr}.cols-2{grid-template-columns:1fr}.bar{grid-template-columns:1fr}.presetBox{align-items:flex-start}}
+
+    /* Annual note (no buttony look) */
+    .annualNote{font-size:13px;color:var(--muted);padding:2px 0}
+    .annualNote .lock{margin-right:6px}
+
+    /* Print styles */
+    .printOnly{display:none}
+    @media print{
+      body{background:#fff}
+      .seg,.btns,.presetHint,.help,button{display:none !important}
+      .card{box-shadow:none;border:1px solid #e5e7eb}
+      .wrap{max-width:1024px}
+      .printOnly{display:block}
+    }
+
+    @media (max-width:900px){
+      .cols-3{grid-template-columns:1fr}
+      .cols-2{grid-template-columns:1fr}
+      .bar{grid-template-columns:1fr;grid-template-rows:auto auto auto}
+      .bar .label{grid-column:1;grid-row:1}
+      .bar .track{grid-column:1;grid-row:2}
+      .bar .val{grid-column:1;grid-row:3;justify-content:flex-start}
+      .presetBox{align-items:flex-start}
+    }
   </style>
 </head>
 <body>
@@ -62,7 +91,11 @@
     <div class="header">
       <div>
         <h1>Aerial Pro — Client‑Facing ROI Calculator</h1>
-        <p class="sub">Annual model. Adjust flights and assumptions to match your project. Results update instantly; nothing is saved to a server.</p>
+        <p class="sub">Annual model. Adjust flights and assumptions to match your operations. Results update instantly; nothing is saved to a server.</p>
+        <div class="toolbar">
+          <button class="ghost" id="openPrint">Open print view</button>
+          <button id="printPdf">Print / Save PDF</button>
+        </div>
       </div>
       <div class="presetBox">
         <div class="seg" role="tablist" aria-label="Preset selector">
@@ -82,8 +115,9 @@
           <div class="grid cols-2">
             <div>
               <label>Project duration</label>
-              <div class="pill">Annual (12 months)</div>
+              <div class="annualNote"><span class="lock">🔒</span>Annual model (12 months)</div>
               <input id="months" type="hidden" value="12" />
+              <div class="printOnly note" id="stamp"></div>
             </div>
             <div>
               <label>Flights per month</label>
@@ -91,11 +125,11 @@
             </div>
           </div>
 
-          <!-- ROI cards — ORDERED per request: 1) Survey lag 2) GCP 3) Strike 4) Rework 5) Disputes 6) Equipment 7) Travel -->
+          <!-- ROI cards — ordered -->
           <div class="grid cols-2">
             <!-- 1. Survey lag -->
             <div class="card">
-              <h3>Survey lag avoided <span class="help" data-tip="Source: field time studies; replacing manual topo/check cycles typically saves 2–4 hr per flight.">?</span></h3>
+              <h3>Survey lag avoided <span class="help" title="Source: field time studies; replacing manual topo/check cycles typically saves 2–4 hr per flight.">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Hours saved per flight</label>
@@ -107,9 +141,9 @@
               </div>
             </div>
 
-            <!-- 2. GCP tagging -->
+            <!-- 2. GCP -->
             <div class="card">
-              <h3>GCP tagging time saved <span class="help" data-tip="Conservative assumption: ~20 min saved per map with auto‑tag + QA (0.33 hr).">?</span></h3>
+              <h3>GCP tagging time saved <span class="help" title="Conservative assumption: ~20 min saved per map with auto‑tag + QA (0.33 hr).">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Hours saved per map</label>
@@ -122,9 +156,9 @@
               </div>
             </div>
 
-            <!-- 3. Strike prevention -->
+            <!-- 3. Strike -->
             <div class="card">
-              <h3>Strike prevention (post‑install) <span class="help" data-tip="Source: CGA DIRT (root causes); utility as‑builts before backfill + no‑dig overlays reduce hits.">?</span></h3>
+              <h3>Strike prevention (post‑install) <span class="help" title="Source: CGA DIRT (root causes); utility as‑builts before backfill + no‑dig overlays reduce hits.">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Baseline strikes / yr</label>
@@ -141,7 +175,7 @@
 
             <!-- 4. Rework -->
             <div class="card">
-              <h3>Rework from grade errors <span class="help" data-tip="Source: earthworks change logs; minor regrades often reach thousands of CY.">?</span></h3>
+              <h3>Rework from grade errors <span class="help" title="Source: earthworks change logs; minor regrades often reach thousands of CY.">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Cubic yards rework avoided</label>
@@ -156,9 +190,9 @@
               </div>
             </div>
 
-            <!-- 5. Fewer disputes -->
+            <!-- 5. Disputes -->
             <div class="card">
-              <h3>Fewer disputes / COs <span class="help" data-tip="Source: CS & win/loss notes; verified quantities + visuals reduce pay‑app disputes and callbacks.">?</span></h3>
+              <h3>Fewer disputes / COs <span class="help" title="Source: CS & win/loss notes; verified quantities + visuals reduce pay‑app disputes and callbacks.">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Avg dispute cost</label>
@@ -170,9 +204,9 @@
               </div>
             </div>
 
-            <!-- 6. Equipment productivity -->
+            <!-- 6. Equipment -->
             <div class="card">
-              <h3>Equipment productivity <span class="help" data-tip="Source: foreman interviews; equipment/crews idle waiting on survey updates; drones shrink wait windows.">?</span></h3>
+              <h3>Equipment productivity <span class="help" title="Source: foreman interviews; equipment/crews idle waiting on survey updates; drones shrink wait windows.">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Idle hours avoided / mo</label>
@@ -184,9 +218,9 @@
               </div>
             </div>
 
-            <!-- 7. Site visit reduction -->
+            <!-- 7. Travel -->
             <div class="card">
-              <h3>Site visit reduction (remote sites) <span class="help" data-tip="Source: travel policy benchmarks; avoided trips (airfare, hotel, per‑diem, ground).">?</span></h3>
+              <h3>Site visit reduction (remote sites) <span class="help" title="Source: travel policy benchmarks; avoided trips (airfare, hotel, per‑diem, ground).">?</span></h3>
               <div class="body grid">
                 <div class="row"><div>
                   <label>Trips avoided / yr</label>
@@ -214,7 +248,6 @@
 
           <div class="btns">
             <button id="reset" class="ghost">Reset</button>
-            <button id="copy">Copy summary</button>
           </div>
         </div>
       </div>
@@ -260,15 +293,12 @@
             </div>
           </div>
 
-          <div class="note">Notes: Annual model (12 months fixed). Subscription is annual. Savings buckets reflect 12‑month impact.
-          </div>
+          <div class="note">Notes: Annual model (12 months fixed). Subscription is annual. Savings buckets reflect 12‑month impact.</div>
         </div>
       </div>
 
     </div>
   </div>
-
-  <div id="barTip" class="bartip" role="tooltip" aria-hidden="true"></div>
 
   <script>
     const $ = (id) => document.getElementById(id);
@@ -287,23 +317,22 @@
     };
 
     function calc(){
-      // Force annual model
-      const months = 12;
+      const months = 12; // annual model
       const flights = +inputs.flights.value || 0;
 
       // Savings (annual)
       const surveyLag = flights * months * ((+inputs.hrsSaved.value||0) * (+inputs.surveyRate.value||0));
-      const disputes = (+inputs.avgDispute.value||0) * (+inputs.disputesAvoided.value||0); // annual
-      const strikes = Math.max((+inputs.baseStrikes.value||0) - (+inputs.progStrikes.value||0), 0) * (+inputs.avgStrike.value||0); // annual
+      const disputes = (+inputs.avgDispute.value||0) * (+inputs.disputesAvoided.value||0);
+      const strikes = Math.max((+inputs.baseStrikes.value||0) - (+inputs.progStrikes.value||0), 0) * (+inputs.avgStrike.value||0);
       const equipment = (+inputs.idleHrs.value||0) * (+inputs.equipRate.value||0) * months;
-      const rework = (+inputs.reworkCY.value||0) * (+inputs.reworkRate.value||0) * (+inputs.reworkEvents.value||0); // annual
+      const rework = (+inputs.reworkCY.value||0) * (+inputs.reworkRate.value||0) * (+inputs.reworkEvents.value||0);
       const perTrip = (+inputs.airfare.value||0) + ((+inputs.nights.value||0) * ((+inputs.hotelRate.value||0) + (+inputs.mealsPer.value||0))) + (+inputs.groundPer.value||0);
-      const travel = (+inputs.tripsYr.value||0) * perTrip; // annual
+      const travel = (+inputs.tripsYr.value||0) * perTrip;
       const gcp = flights * months * ((+inputs.gcpHours.value||0) * (+inputs.vdcRate.value||0));
 
       const gross = surveyLag + gcp + strikes + rework + disputes + equipment + travel;
 
-      // Costs (subscription annual)
+      // Costs (annual)
       const subscription = (+inputs.subCost.value||0);
       const capture = (+inputs.pilotHrs.value||0) * (+inputs.pilotRate.value||0) * flights * months;
       const totalCost = subscription + capture + (+inputs.train.value||0);
@@ -321,13 +350,14 @@
       $('reworkOut').textContent = fmt(rework);
       $('travelOut').textContent = fmt(travel);
       $('gcpOut').textContent = fmt(gcp);
+
       $('gross').textContent = fmt(gross);
       $('cost').textContent = fmt(totalCost);
       $('net').textContent = fmt(net);
       $('roi').textContent = isFinite(roiMultiple) ? (roiMultiple.toFixed(2) + '×') : '—';
       $('payback').textContent = isFinite(paybackMonths) ? (paybackMonths.toFixed(1) + ' months') : 'n/a';
 
-      // Bars — ORDERED to match ROI cards
+      // Bars — with value text UNDER each bar (no hover needed)
       const bars = [
         { label:'Survey lag avoided', val: surveyLag },
         { label:'GCP tagging time saved', val: gcp },
@@ -341,34 +371,21 @@
       const max = Math.max(1, ...bars.map(b => Math.abs(b.val)));
       const list = $('bars');
       list.innerHTML = '';
-      const tip = $('barTip');
-
       bars.forEach(b => {
         const pct = Math.round((Math.abs(b.val)/max)*100);
         const row = document.createElement('div');
         row.className = 'bar' + (b.val < 0 ? ' neg' : '');
-        row.setAttribute('title', `${b.label}: ${fmt(b.val)}`);
-        row.setAttribute('aria-label', `${b.label}: ${fmt(b.val)}`);
-        row.innerHTML = `<div class="label">${b.label}</div>\n                         <div class="track"><div class="fill" style="width:${pct}%;"></div></div>`;
-        const show = (e) => {
-          tip.textContent = `${b.label}: ${fmt(b.val)}`;
-          tip.style.opacity = '1';
-          const x = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-          const y = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-          tip.style.left = x + 12 + 'px';
-          tip.style.top  = y - 12 + 'px';
-          tip.setAttribute('aria-hidden','false');
-        };
-        const move = (e) => show(e);
-        const hide = () => { tip.style.opacity='0'; tip.setAttribute('aria-hidden','true'); };
-        row.addEventListener('mouseenter', show);
-        row.addEventListener('mousemove', move);
-        row.addEventListener('mouseleave', hide);
-        row.addEventListener('touchstart', show, {passive:true});
-        row.addEventListener('touchmove', move, {passive:true});
-        row.addEventListener('touchend', hide);
+        row.innerHTML = `<div class="label">${b.label}</div>
+                         <div class="track"><div class="fill" style="width:${pct}%;"></div></div>
+                         <div class="val">${b.val < 0 ? '-' : ''}${fmt(Math.abs(b.val))}</div>`;
         list.appendChild(row);
       });
+
+      // Stamp (print)
+      const d = new Date();
+      const stamp = `Generated ${d.toLocaleString()} | Flights/mo: ${inputs.flights.value}`;
+      const stampEl = $('stamp');
+      if (stampEl) stampEl.textContent = stamp;
 
       return {gross,totalCost,net,roiMultiple,paybackMonths};
     }
@@ -406,28 +423,15 @@
       setVals(presets[name]);
     }
 
-    function reset(){
-      applyPreset('base');
-    }
+    function reset(){ applyPreset('base'); }
 
-    function copySummary(){
-      const r = calc();
-      const lines = [
-        'Aerial Pro ROI Summary',
-        `Duration: 12 mo (annual) | Flights/mo: ${inputs.flights.value}`,
-        `Gross value: ${fmt(r.gross)}`,
-        `Program cost (year): ${fmt(r.totalCost)}`,
-        `Net savings: ${fmt(r.net)}`,
-        `ROI multiple: ${isFinite(r.roiMultiple) ? r.roiMultiple.toFixed(2)+'x' : '—'}`,
-        `Payback: ${isFinite(r.paybackMonths) ? r.paybackMonths.toFixed(1)+' mo' : 'n/a'}`,
-      ];
-      navigator.clipboard.writeText(lines.join('\n')).then(()=>alert('Summary copied to clipboard.'));
-    }
+    // Print helpers
+    function openPrintView(){ window.scrollTo({top:0,behavior:'smooth'}); setTimeout(()=>window.print(), 250); }
 
     // URL param prefill (sanitize; ignore empty). Months is locked to 12.
     const params = new URLSearchParams(location.search);
     Object.entries(inputs).forEach(([k, el])=>{
-      if (k === 'months') { el.value = 12; return; } // lock annual
+      if (k === 'months') { el.value = 12; return; }
       const raw = params.get(k);
       if (raw === null || raw === '') return;
       if (el.type === 'number') {
@@ -445,13 +449,15 @@
     if (!inputs.pilotRate.value || !isFinite(+inputs.pilotRate.value)) inputs.pilotRate.value = 75;
     if (!inputs.train.value   || !isFinite(+inputs.train.value))   inputs.train.value   = 2000;
 
+    // Events
     document.querySelectorAll('input').forEach(el=> el.addEventListener('input', calc));
-    $('reset').addEventListener('click', reset);
-    $('copy').addEventListener('click', copySummary);
     document.getElementById('pConservative').addEventListener('click', ()=>applyPreset('conservative'));
     document.getElementById('pBase').addEventListener('click', ()=>applyPreset('base'));
     document.getElementById('pAggressive').addEventListener('click', ()=>applyPreset('aggressive'));
+    document.getElementById('openPrint').addEventListener('click', ()=>window.print());
+    document.getElementById('printPdf').addEventListener('click', openPrintView);
 
+    // Init
     applyPreset('conservative');
     calc();
   </script>
